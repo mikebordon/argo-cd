@@ -708,13 +708,10 @@ func (creds AzureWorkloadIdentityCreds) Environ() (io.Closer, []string, error) {
 	if err != nil {
 		return NopCloser{}, nil, err
 	}
-	nonce := creds.store.Add("", token)
-	env := creds.store.Environ(nonce)
 
-	return utilio.NewCloser(func() error {
-		creds.store.Remove(nonce)
-		return nil
-	}), env, nil
+	var env []string
+	env = append(env, fmt.Sprintf("%s=Authorization: Bearer %s", bearerAuthHeaderEnv, token))
+	return NopCloser{}, env, nil
 }
 
 func (creds AzureWorkloadIdentityCreds) getAccessToken(scope string) (string, error) {
